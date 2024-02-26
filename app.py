@@ -11,12 +11,19 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 
+def display_footer():
+    html_temp = """
+    <div style="position: fixed; left: 0; bottom: 0; width: 100%;font-size: 13px; text-align: center; color: white; background-color: #f0f2f5;">
+    <p> <a href="https://forms.gle/jDtnE1WeTHjjzsyf9" target="_blank">Feel free to give us the feedback</a></p>
+    </div>
+    """
+    st.markdown(html_temp, unsafe_allow_html=True)
+
 load_dotenv()
 genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
 if 'processing_done' not in st.session_state:
     st.session_state['processing_done'] = False
 
-model = genai.GenerativeModel('gemini-pro')
 def get_pdf_text(pdf_docs):
     text=""
     for pdf in pdf_docs:
@@ -30,13 +37,11 @@ def get_text_chunks(text):
     chunks = text_splitter.split_text(text)
     return chunks
 
-
 def get_vector_store(text_chunks):
     embeddings = GoogleGenerativeAIEmbeddings(model = "models/embedding-001")
     vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
 
     vector_store.save_local("faiss_index")
-
 
 def get_conversational_chain():
 
@@ -72,15 +77,13 @@ def user_input(user_question):
         print(response)
         st.write("Reply:\n", response["output_text"])
     else:
-        st.error("Please upload PDF filesand and Click on the Confirm & Submit Button")
+        st.error("Please upload PDF files and and Click on the Confirm & Submit Button")
 
-import logging
-# Set up logging for debugging
-logging.basicConfig(filename="faiss_index_log.txt", level=logging.DEBUG)
 
 def main():
-    st.set_page_config("Chat with PDF")
-    st.header("Chat with PDF (Beta mode V1.1)")
+    st.set_page_config("Hey PDF")
+    st.header("Chat with PDF (Beta mode v1.1)")
+   #st.footer("Provide your feedback for improvement: https://forms.gle/jDtnE1WeTHjjzsyf9")
 
     user_question = st.text_input("Ask a Question from the PDF Files")
     
@@ -96,7 +99,6 @@ def main():
                 if pdf_docs:
                     raw_text = get_pdf_text(pdf_docs)
                     text_chunks = get_text_chunks(raw_text)
-                    # Delete existing faiss_index
                     get_vector_store(text_chunks)
                     st.success("Done")
                     st.session_state['processing_done'] = True  # Set processing_done after successful processing
@@ -106,3 +108,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    display_footer()
