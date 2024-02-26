@@ -48,7 +48,7 @@ def get_conversational_chain():
     prompt_template = """
     Answer the question as detailed as possible from the provided context, make sure to provide all the details, if the answer is not in
     provided context just say, "answer is not available in the context", don't provide the wrong answer\n\n
-    Context:\n {context}?\n
+    Context:\n {input_documents}?\n
     Question: \n{question}\n
 
     Answer:
@@ -57,8 +57,8 @@ def get_conversational_chain():
     model = ChatGoogleGenerativeAI(model="gemini-pro",
                              temperature=0.3)
 
-    prompt = PromptTemplate(template = prompt_template, input_variables = ["context", "question"])
-    chain = load_qa_chain(model, chain_type="stuff", prompt=prompt)
+    prompt = PromptTemplate(template = prompt_template, input_variables = ["input_documents", "question"])
+    chain = load_qa_chain(model, chain_type="stuff", prompt=prompt, document_variable_name="input_documents")
 
     return chain
 
